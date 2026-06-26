@@ -1,11 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useUser } from '@clerk/clerk-react';
 import API from '../api';
 import { getBackendConfigError } from '../config/backend';
 import { SocketProvider } from '../context/SocketContext';
 import { CallProvider, useCall } from '../context/CallContext';
+import { ToastProvider, useToast } from '../context/ToastContext';
 import { useSocket } from '../context/SocketContext';
 import { useConversations } from '../hooks/useConversations';
+import { idsEqual } from '../utils/id';
 import Sidebar from '../components/sidebar/Sidebar';
 import ChatPanel from '../components/chat/ChatPanel';
 import EmptyState from '../components/chat/EmptyState';
@@ -20,10 +22,11 @@ const MEDIA_CONSTRAINTS = {
 /**
  * Inner dashboard — consumes contexts so it must be inside providers.
  */
-function DashboardInner({ dbUser, configError }) {
+function DashboardInner({ dbUser, configError, navigateRef }) {
   const { user }                    = useUser();
   const { socket, isConnected, connectError } = useSocket();
   const { callActive, callSession, receiveCall, endCall } = useCall();
+  const { showToast } = useToast();
 
   const {
     conversations,
@@ -38,16 +41,35 @@ function DashboardInner({ dbUser, configError }) {
 
   const [activeConvo, setActiveConvo] = useState(null);
 
-  const handleSelectConvo = (convo) => {
+  const handleSelectConvo = useCallback((convo) => {
     setActiveConvo(convo);
     if (convo?._id) markConvoRead(convo._id);
-  };
+  }, [markConvoRead]);
+
+  useEffect(() => {
+    if (!navigateRef) return;
+    navigateRef.current = (convoId) => {
+      const convo = conversations.find(c => idsEqual(c._id, convoId));
+      if (convo) handleSelectConvo(convo);
+    };
+  }, [conversations, handleSelectConvo, navigateRef]);
 
   useEffect(() => {
     if (!socket) return;
-    socket.on('call_incoming', receiveCall);
-    return () => socket.off('call_incoming', receiveCall);
-  }, [socket, receiveCall]);
+
+    const onIncomingCall = (data) => {
+      receiveCall(data);
+      showToast({
+        type: 'call',
+        title: data.fromName || 'Someone',
+        message: 'Incoming video call...',
+        duration: 8000,
+      });
+    };
+
+    socket.on('call_incoming', onIncomingCall);
+    return () => socket.off('call_incoming', onIncomingCall);
+  }, [socket, receiveCall, showToast]);
 
   const handleStartChat = async (recipient) => {
     const convo = await startChat(recipient);
@@ -211,6 +233,7 @@ function CallProviderWithListener({ dbUser, configError }) {
 
 function CallEventBridge({ dbUser, configError }) {
   const { initiateCall } = useCall();
+  const navigateRef = useRef(null);
 
   useEffect(() => {
     const handler = (e) => {
@@ -221,5 +244,9 @@ function CallEventBridge({ dbUser, configError }) {
     return () => window.removeEventListener('nexus:initcall', handler);
   }, [initiateCall]);
 
-  return <DashboardInner dbUser={dbUser} configError={configError} />;
+  return (
+    <ToastProvider onNavigateToConvo={(convoId) => navigateRef.current?.(convoId)}>
+      <DashboardInner dbUser={dbUser} configError={configError} navigateRef={navigateRef} />
+    </ToastProvider>
+  );
 }

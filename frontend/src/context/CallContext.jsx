@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
+import { startRingtone, stopRingtone } from '../utils/sounds';
 
 const CallContext = createContext(null);
 
@@ -25,6 +26,7 @@ export function CallProvider({ children }) {
   }, []);
 
   const receiveCall = useCallback(({ signal, fromId, fromName }) => {
+    startRingtone();
     setCallSession({
       isIncoming: true,
       callerId:   fromId,
@@ -35,6 +37,7 @@ export function CallProvider({ children }) {
   }, []);
 
   const endCall = useCallback(() => {
+    stopRingtone();
     setCallSession(prev => {
       prev?.localStream?.getTracks?.().forEach(t => t.stop());
       return null;

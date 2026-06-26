@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import API from '../api';
 import { useSocket } from '../context/SocketContext';
+import { useToast } from '../context/ToastContext';
+import { playNotificationSound } from '../utils/sounds';
 import { idsEqual, normalizeId } from '../utils/id';
 
 /**
@@ -8,6 +10,7 @@ import { idsEqual, normalizeId } from '../utils/id';
  */
 export function useConversations(dbUser, clerkUser) {
   const { socket } = useSocket();
+  const { showToast } = useToast();
   const [conversations, setConversations] = useState([]);
   const [usersList,     setUsersList]     = useState([]);
   const [isLoading,     setIsLoading]     = useState(false);
@@ -79,26 +82,41 @@ export function useConversations(dbUser, clerkUser) {
       const senderId = normalizeId(typeof msg.sender === 'object' ? msg.sender._id : msg.sender);
       const activeId = normalizeId(activeConvoIdRef.current);
 
-      if (senderId !== normalizeId(dbUser._id) && msgConvoId !== activeId) {
-        setUnreadCounts(prev => ({
-          ...prev,
-          [msgConvoId]: (prev[msgConvoId] || 0) + 1,
-        }));
+      if (senderId !== normalizeId(dbUser._id)) {
+        playNotificationSound();
 
-        if (Notification.permission === 'granted') {
-          const senderName = typeof msg.sender === 'object' ? msg.sender.username : 'Someone';
-          new Notification(senderName, {
-            body: msg.text || 'Sent a message',
-            icon: typeof msg.sender === 'object' ? msg.sender.imageUrl : undefined,
-            tag: msgConvoId,
-          });
+        const senderName = typeof msg.sender === 'object' ? msg.sender.username : 'Someone';
+        const senderImage = typeof msg.sender === 'object' ? msg.sender.imageUrl : undefined;
+
+        showToast({
+          type: 'message',
+          tag: msgConvoId,
+          title: senderName,
+          message: msg.text || 'Sent a message',
+          avatarSrc: senderImage,
+          convoId: msgConvoId,
+        });
+
+        if (msgConvoId !== activeId) {
+          setUnreadCounts(prev => ({
+            ...prev,
+            [msgConvoId]: (prev[msgConvoId] || 0) + 1,
+          }));
+
+          if (Notification.permission === 'granted') {
+            new Notification(senderName, {
+              body: msg.text || 'Sent a message',
+              icon: senderImage,
+              tag: msgConvoId,
+            });
+          }
         }
       }
     };
 
     socket.on('receive_message', onNewMessage);
     return () => socket.off('receive_message', onNewMessage);
-  }, [socket, dbUser]);
+  }, [socket, dbUser, showToast]);
 
   useEffect(() => {
     if ('Notification' in window && Notification.permission === 'default') {

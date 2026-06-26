@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useWebRTC } from '../../hooks/useWebRTC';
 import { useSocket } from '../../context/SocketContext';
+import { stopRingtone } from '../../utils/sounds';
 import RingingPanel from './RingingPanel';
 import VideoGrid from './VideoGrid';
 import CallControls from './CallControls';
@@ -44,6 +45,10 @@ export default function VideoCallModal({ session, onClose }) {
       setCallStatus('Incoming video call...');
     }
   }, [session.isIncoming, initiateCall, setCallStatus]);
+
+  useEffect(() => {
+    if (callConnected) stopRingtone();
+  }, [callConnected]);
 
   useEffect(() => {
     if (!socket) return;

@@ -139,6 +139,14 @@ export default {
           '0%':   { backgroundPosition: '-200% center' },
           '100%': { backgroundPosition:  '200% center' },
         },
+        'toast-in': {
+          '0%':   { opacity: '0', transform: 'translateX(100%) scale(0.95)' },
+          '100%': { opacity: '1', transform: 'translateX(0) scale(1)' },
+        },
+        'toast-out': {
+          '0%':   { opacity: '1', transform: 'translateX(0) scale(1)' },
+          '100%': { opacity: '0', transform: 'translateX(100%) scale(0.95)' },
+        },
       },
 
       animation: {
@@ -156,6 +164,8 @@ export default {
         'typing-3':   'typing-dot 1.2s 0.4s infinite ease-in-out',
         'float':      'float 3s ease-in-out infinite',
         shimmer:      'shimmer 2s linear infinite',
+        'toast-in':   'toast-in 0.35s cubic-bezier(0.21, 1.02, 0.73, 1) both',
+        'toast-out':  'toast-out 0.25s ease both',
       },
 
       transitionTimingFunction: {

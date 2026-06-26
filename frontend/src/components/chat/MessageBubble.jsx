@@ -10,7 +10,7 @@ export default function MessageBubble({ msg, isOutgoing, showSenderName, isGroup
 
   return (
     <div className={`flex flex-col max-w-[85%] md:max-w-[75%] animate-fade-up
-      ${isOutgoing ? 'self-end items-end' : 'self-start items-start'}
+      ${isOutgoing ? 'self-end items-end translate-x-[50px]' : 'self-start items-start'}
       ${isGrouped ? 'mt-0.5' : 'mt-3'}
     `}>
       {/* Sender name for group chats */}
