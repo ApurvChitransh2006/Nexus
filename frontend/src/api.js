@@ -1,8 +1,30 @@
 import axios from 'axios';
 
-// Create a single reusable Axios instance configuration
+const normalizeBaseUrl = (value) => {
+  if (!value) return '';
+  return value.replace(/\/$/, '');
+};
+
+const resolveApiBaseUrl = () => {
+  const configuredUrl = normalizeBaseUrl(import.meta.env.VITE_API_URL || '');
+
+  if (configuredUrl) {
+    if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && /^(https?:\/\/)?(localhost|127\.0\.0\.1)(:\d+)?(\/|$)/i.test(configuredUrl)) {
+      return window.location.origin;
+    }
+
+    return configuredUrl;
+  }
+
+  if (typeof window !== 'undefined') {
+    return window.location.origin;
+  }
+
+  return 'http://localhost:5000';
+};
+
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000'
+  baseURL: resolveApiBaseUrl()
 });
 
 export default API;

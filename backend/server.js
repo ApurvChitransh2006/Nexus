@@ -9,8 +9,15 @@ import { initSocket } from './socket.js';
 dotenv.config();
 
 const app = express();
+const allowedOrigins = (process.env.FRONTEND_URL || process.env.CLIENT_URL || 'http://localhost:5173')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: allowedOrigins,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 }));
 app.use(express.json());
 
@@ -150,6 +157,6 @@ app.get('/api/conversations/:convoId/messages', async (req, res) => {
 
 // ------------------ START SERVER ------------------
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => {
-  console.log(`Express API is active on port http://localhost:${PORT}`);
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`Express API is active on port ${PORT}`);
 });

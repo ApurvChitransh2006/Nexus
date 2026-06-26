@@ -5,9 +5,15 @@ import { User, Message, Conversation } from './models.js';
 const userSocketMap = new Map();
 
 export function initSocket(server) {
+  const allowedOrigins = (process.env.FRONTEND_URL || process.env.CLIENT_URL || 'http://localhost:5173')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
   const io = new Server(server, {
     cors: {
-      origin: '*',
+      origin: allowedOrigins,
+      credentials: true,
       methods: ['GET', 'POST']
     }
   });
