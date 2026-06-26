@@ -1,0 +1,157 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Base resets ── */
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html, body, #root {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  body {
+    @apply font-sans bg-void text-text-primary antialiased;
+  }
+
+  /* Custom scrollbars */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { @apply bg-overlay rounded-full; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-text-muted; }
+
+  /* Selection color */
+  ::selection { @apply bg-electric/30 text-text-bright; }
+}
+
+/* ── Custom component classes ── */
+@layer components {
+  /* Glass card surface */
+  .glass {
+    @apply bg-elevated/60 backdrop-blur-glass border border-border-soft;
+  }
+  .glass-dark {
+    @apply bg-abyss/80 backdrop-blur-glass border border-border-faint;
+  }
+  .glass-heavy {
+    @apply bg-void/90 backdrop-blur-heavy border border-border-soft;
+  }
+
+  /* Gradient accent text */
+  .gradient-text {
+    @apply bg-gradient-to-r from-electric-400 via-electric to-cobalt-400 bg-clip-text text-transparent;
+  }
+  .gradient-text-white {
+    @apply bg-gradient-to-br from-white via-electric-300 to-cobalt-400 bg-clip-text text-transparent;
+  }
+
+  /* Gradient button / background */
+  .bg-accent-grad {
+    background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 55%, #3b82f6 100%);
+  }
+
+  /* Focus ring */
+  .focus-ring {
+    @apply outline-none ring-2 ring-electric/50 ring-offset-2 ring-offset-void;
+  }
+
+  /* Message bubble tails */
+  .bubble-tail-right::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    right: -6px;
+    width: 0;
+    height: 0;
+    border: 8px solid transparent;
+    border-left-color: #7c3aed;
+    border-bottom: 0;
+    border-right: 0;
+    margin-bottom: 1px;
+  }
+  .bubble-tail-left::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: -6px;
+    width: 0;
+    height: 0;
+    border: 8px solid transparent;
+    border-right-color: #121828;
+    border-bottom: 0;
+    border-left: 0;
+    margin-bottom: 1px;
+  }
+}
+
+/* ── Custom utility patches ── */
+@layer utilities {
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* Gradient backgrounds that Tailwind can't express as utilities */
+  .bg-aurora-violet {
+    background: radial-gradient(circle, rgba(124,58,237,0.20) 0%, transparent 70%);
+  }
+  .bg-aurora-blue {
+    background: radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 70%);
+  }
+  .bg-aurora-green {
+    background: radial-gradient(circle, rgba(16,185,129,0.15) 0%, transparent 70%);
+  }
+
+  /* Mesh pattern for chat background */
+  .bg-chat-mesh {
+    background-image:
+      radial-gradient(circle at 20% 20%, rgba(124,58,237,0.04) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(59,130,246,0.04) 0%, transparent 50%);
+  }
+
+  /* Sidebar accent bar */
+  .accent-bar-top::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(135deg, #7c3aed, #4f46e5, #3b82f6);
+    opacity: 0.7;
+  }
+
+  /* Active convo left border indicator */
+  .active-indicator::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 20%; bottom: 20%;
+    width: 3px;
+    border-radius: 0 3px 3px 0;
+    background: linear-gradient(135deg, #7c3aed, #3b82f6);
+  }
+
+  /* Shimmer loading */
+  .shimmer-bg {
+    background: linear-gradient(
+      90deg,
+      rgba(255,255,255,0.03) 0%,
+      rgba(255,255,255,0.07) 50%,
+      rgba(255,255,255,0.03) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.8s linear infinite;
+  }
+
+  /* Glow borders */
+  .border-glow {
+    border-color: rgba(124,58,237,0.35);
+    box-shadow: 0 0 0 1px rgba(124,58,237,0.2);
+  }
+
+  /* Frosted header blur */
+  .header-blur {
+    background: rgba(8,12,24,0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+}
